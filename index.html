@@ -1,1 +1,256 @@
-    
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>しげたんなでなで</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #ffffff;
+            color: #333;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #message {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            height: 1.5em;
+            color: #555;
+        }
+
+        #cat-image {
+            width: 85vw;
+            max-width: 450px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-drag: none;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #cat-image:active {
+            transform: scale(0.96);
+        }
+
+        .effect {
+            position: absolute;
+            pointer-events: none;
+            font-size: 2rem;
+            animation: moveUp 0.8s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes moveUp {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -120px) scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .pachinko-particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.5rem;
+            z-index: 200;
+        }
+
+        @keyframes pachinkoFall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .pachinko-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.8) 0%, rgba(255, 215, 0, 0) 70%);
+            pointer-events: none;
+            z-index: 150;
+            animation: flashPulse 0.6s ease-out;
+        }
+
+        @keyframes flashPulse {
+            0% {
+                opacity: 1;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+
+        .hint {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+
+        .pachimoji-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            z-index: 250;
+            pointer-events: none;
+            animation: pachinkoAppear 0.3s ease-out;
+        }
+
+        @keyframes pachinkoAppear {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="message">なでて...？</div>
+
+    <img id="cat-image" src="sigeru.jpg" alt="Cat">
+
+    <p class="hint">マウスや指で優しくなでてね</p>
+
+    <script>
+        const cat = document.getElementById('cat-image');
+        const msg = document.getElementById('message');
+        const reactions = ["ゴロゴロ...", "ふにゃ〜", "（うっとり）", "幸せだニャ", "最高だニャ...", "🐾"];
+        
+        // フォルダ内の画像リスト
+        const normalImages = ['sigeru.jpg', 'S__134094853.jpg', 'S__134094861.jpg', 'S__134094863.jpg'];
+        const rareImage = 'etuko.jpg';
+        
+        // 効果音
+        const sound = new Audio('sigesound.MP3');
+        
+        // ページ読み込み時にランダムな画像を表示
+        window.addEventListener('load', () => {
+            let selectedImage;
+            // 5% の確率でレア画像を選択
+            if (Math.random() > 0.95) {
+                selectedImage = rareImage;
+                triggerPachinkoEffect();
+            } else {
+                selectedImage = normalImages[Math.floor(Math.random() * normalImages.length)];
+            }
+            cat.src = selectedImage;
+        });
+
+        cat.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.92) {
+                createEffect(e.pageX, e.pageY);
+                updateMessage();
+                playSoundRandomly();
+            }
+        });
+
+        cat.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            if (Math.random() > 0.85) {
+                createEffect(touch.pageX, touch.pageY);
+                updateMessage();
+                playSoundRandomly();
+            }
+        });
+
+        function updateMessage() {
+            if (Math.random() > 0.9) {
+                msg.innerText = reactions[Math.floor(Math.random() * reactions.length)];
+            }
+        }
+        
+        function playSoundRandomly() {
+            // 10% の確率で音を再生
+            if (Math.random() > 0.9) {
+                sound.currentTime = 0;
+                sound.play().catch(err => console.log('音声再生エラー:', err));
+            }
+        }
+
+        function createEffect(x, y) {
+            const el = document.createElement('div');
+            el.className = 'effect';
+            el.innerText = Math.random() > 0.4 ? "" : "🐾";
+
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+
+            document.body.appendChild(el);
+
+            setTimeout(() => {
+                el.remove();
+            }, 800);
+        }
+
+        function triggerPachinkoEffect() {
+            // シャキーン音を再生
+            const pachinkoSound = new Audio('./シャキーン3.mp3');
+            pachinkoSound.volume = 1.0;
+            pachinkoSound.play().catch(err => console.log('音声再生エラー:', err));
+
+            // pachimoji画像を表示
+            const pachimojiImg = document.createElement('img');
+            pachimojiImg.className = 'pachimoji-display';
+            pachimojiImg.src = 'pachimoji(2).png';
+            pachimojiImg.alt = 'Pachimoji';
+            document.body.appendChild(pachimojiImg);
+
+            // 3秒後に画像を削除
+            setTimeout(() => {
+                pachimojiImg.remove();
+            }, 3000);
+
+            const flash = document.createElement('div');
+            flash.className = 'pachinko-flash';
+            document.body.appendChild(flash);
+
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'pachinko-particle';
+                particle.innerText = '✨';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * -10 + 'vh';
+                particle.style.animation = `pachinkoFall ${Math.random() * 1 + 1.5}s ease-out forwards`;
+                document.body.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 2000);
+            }
+
+            setTimeout(() => {
+                flash.remove();
+            }, 600);
+        }
+    </script>
+</body>
+</html>
